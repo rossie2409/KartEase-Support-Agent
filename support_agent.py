@@ -120,6 +120,7 @@ def main():
 
             while response.tool_calls:
                 for tool_call in response.tool_calls:
+                    print(f"[Tool used: {tool_call['name']}]")
                     if tool_call["name"] == "policy_search":
                         result = policy_search.invoke(
                             tool_call["args"]
