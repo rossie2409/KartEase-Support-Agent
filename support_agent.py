@@ -46,7 +46,7 @@ def create_agent():
     llm = ChatGoogleGenerativeAI(
         model=os.getenv(
             "GEMINI_MODEL",
-            "gemini-3.5-flash-lite"
+            "gemini-3.5-flash-lite",
         ),
         google_api_key=api_key,
     )
@@ -55,7 +55,7 @@ def create_agent():
 
 
 def format_response(content):
-    """Convert Gemini's response into readable text."""
+    """Extract readable text from Gemini's response."""
     if isinstance(content, str):
         return content
 
@@ -76,15 +76,27 @@ def format_response(content):
 def main():
     llm_with_tools = create_agent()
 
+    system_prompt = (
+        "You are the KartEase customer support assistant. "
+        "Only answer questions related to KartEase orders and policies. "
+        "Use policy_search for questions about returns, refunds, "
+        "payments, shipping, warranties, and other KartEase policies. "
+        "Use order_lookup for questions about a specific order. "
+        "For questions that are unrelated to KartEase orders or policies, "
+        "politely explain that you can only help with KartEase orders "
+        "and policies. Do not answer unrelated questions using "
+        "general knowledge. "
+        "For policy questions, base your answer on the results returned "
+        "by policy_search. If the search cannot find relevant policy "
+        "information, explain that you could not find the answer in "
+        "the KartEase policies. Do not guess or invent policy details. "
+        "Never invent order information. If the order ID is missing, "
+        "ask the customer to provide it. "
+        "Answer politely, clearly, and concisely."
+    )
+
     messages = [
-        (
-            "system",
-            "You are the KartEase customer support assistant. "
-            "Use policy_search for policy questions and order_lookup "
-            "for specific order questions. Never invent policy details "
-            "or order information. If the order ID is missing, ask for it. "
-            "Answer clearly and concisely using the tool results."
-        )
+        ("system", system_prompt)
     ]
 
     print("KartEase Support Agent")
@@ -108,7 +120,6 @@ def main():
 
             while response.tool_calls:
                 for tool_call in response.tool_calls:
-
                     if tool_call["name"] == "policy_search":
                         result = policy_search.invoke(
                             tool_call["args"]
@@ -132,10 +143,8 @@ def main():
                 response = llm_with_tools.invoke(messages)
                 messages.append(response)
 
-            print(
-                f"\nAssistant: "
-                f"{format_response(response.content)}\n"
-            )
+            answer = format_response(response.content)
+            print(f"\nAssistant: {answer}\n")
 
         except Exception as exc:
             print(f"\nAn error occurred: {exc}\n")

@@ -1,5 +1,6 @@
 
 
+
 import os
 from pathlib import Path
 
@@ -10,18 +11,17 @@ from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_chroma import Chroma
 
 
-# Find the project folder and load the API key
+# Find the project folder and load environment variables
 BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(BASE_DIR / ".env")
 
-# Project paths
+# Project paths and collection configuration
 DATA_DIR = BASE_DIR / "data"
 DB_DIR = BASE_DIR / "chroma_db"
 COLLECTION_NAME = "kartease_policies"
 
 
 def build_knowledge_base():
-    # Check whether the API key is available
     api_key = os.getenv("GOOGLE_API_KEY")
 
     if not api_key:
@@ -30,7 +30,6 @@ def build_knowledge_base():
             "in your project folder."
         )
 
-    # Configure the embedding model
     embeddings = GoogleGenerativeAIEmbeddings(
         model=os.getenv(
             "GEMINI_EMBED_MODEL",
@@ -39,7 +38,7 @@ def build_knowledge_base():
         google_api_key=api_key,
     )
 
-    # Load existing vectors if the database already contains data
+    # Reuse an existing collection to avoid unnecessary embeddings
     if DB_DIR.exists():
         try:
             existing_db = Chroma(
@@ -48,15 +47,42 @@ def build_knowledge_base():
                 embedding_function=embeddings,
             )
 
-            if existing_db._collection.count() > 0:
+            count = existing_db._collection.count()
+
+            if count > 0:
                 print("Knowledge base already exists.")
+                print(f"Stored policy chunks: {count}")
+
+                # Verify that source metadata is present
+                sample = existing_db._collection.get(
+                    limit=min(count, 5),
+                    include=["metadatas"],
+                )
+
+                metadatas = sample.get("metadatas") or []
+                filenames_found = {
+                    Path(metadata["source"]).name
+                    for metadata in metadatas
+                    if metadata and metadata.get("source")
+                }
+
+                if filenames_found:
+                    print("Source filename metadata verified:")
+                    for filename in sorted(filenames_found):
+                        print(f"- {filename}")
+                else:
+                    print(
+                        "Warning: source filenames were not found "
+                        "in the sampled metadata."
+                    )
+
                 print("Reusing stored policy vectors.")
                 return
 
         except Exception as exc:
             print(f"Could not reuse existing database: {exc}")
 
-    # Load policy documents
+    # Load policy Markdown files
     loader = DirectoryLoader(
         str(DATA_DIR),
         glob="*.md",
@@ -71,7 +97,7 @@ def build_knowledge_base():
             f"No Markdown policy documents found in {DATA_DIR}"
         )
 
-    # Split documents into smaller chunks
+    # Split documents while preserving their source metadata
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=500,
         chunk_overlap=50,
@@ -82,8 +108,8 @@ def build_knowledge_base():
     print(f"Loaded {len(documents)} policy documents.")
     print(f"Created {len(chunks)} text chunks.")
 
-    # Store the chunks in Chroma
-    vector_store = Chroma.from_documents(
+    # Save chunks and their metadata in Chroma
+    Chroma.from_documents(
         documents=chunks,
         embedding=embeddings,
         collection_name=COLLECTION_NAME,
@@ -96,3 +122,4 @@ def build_knowledge_base():
 
 if __name__ == "__main__":
     build_knowledge_base()
+

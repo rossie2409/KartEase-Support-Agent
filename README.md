@@ -1,5 +1,4 @@
 
-
 # KartEase – AI-Powered Customer Support Agent
 
 ## 1. Project Overview
@@ -29,7 +28,7 @@ The system uses Retrieval-Augmented Generation (RAG) to retrieve relevant inform
 
 ## 4. System Features
 
-### Policy Search using RAG
+### Policy Search Using RAG
 
 The policy documents are loaded, split into smaller text chunks, and converted into vector embeddings. ChromaDB stores these vectors.
 
@@ -55,6 +54,9 @@ kartease_starter/
 │   ├── shipping_and_delivery.md
 │   └── warranty_and_repairs.md
 ├── chroma_db/
+├── tests/
+│   ├── test_order_tools.py
+│   └── test_search_policies.py
 ├── .env
 ├── .gitignore
 ├── ingest_policies.py
@@ -62,12 +64,12 @@ kartease_starter/
 ├── order_tools.py
 ├── support_agent.py
 ├── orders.csv
-├── test_order_tools.py
-├── test_search_policies.py
 ├── requirements-langchain.txt
 ├── pytest.ini
 └── README.md
 ```
+
+The `.env` file contains local configuration and should not be committed to GitHub. The `chroma_db/` directory stores the persistent policy vector database.
 
 ## 6. Prerequisites
 
@@ -76,11 +78,13 @@ kartease_starter/
 - Internet connectivity for Gemini API calls
 - Required Python packages
 
+The project was tested using Python 3.13.15.
+
 ## 7. Installation and Setup
 
 ### Step 1: Create and activate a virtual environment
 
-On Windows CMD:
+On Windows CMD, run:
 
 ```bash
 python -m venv .venv
@@ -111,7 +115,7 @@ Replace `your_google_api_key` with your own API key. Never commit your real API 
 python ingest_policies.py
 ```
 
-This loads the policy Markdown files, creates text chunks, generates embeddings, and stores them in ChromaDB.
+This loads the policy Markdown files, creates text chunks, generates embeddings, and stores them in ChromaDB. The existing knowledge base is reused when available, avoiding unnecessary re-embedding on subsequent runs.
 
 ### Step 5: Start the support agent
 
@@ -125,63 +129,10 @@ Type `exit` to close the application.
 
 ## 8. Example Questions
 
-Policy questions:
+### Policy Questions
 
 - What is the return window for electronics?
 - How long does standard shipping take?
 - What are the warranty conditions?
-
-Order questions:
-
-- Can you check order KE1001?
-- Where is my order?
-- Can you check order KE9999?
-
-## 9. Automated Testing
-
-Run all automated tests:
-
-```bash
-python -m pytest -v
-```
-
-The current test suite contains five tests:
-
-1. Existing order lookup.
-2. Non-existent order handling.
-3. Case-insensitive order IDs.
-4. Electronics return policy retrieval.
-5. Shipping policy retrieval.
-
-### Test Results
-
-| Test Case | Expected Result | Status |
-|---|---|---|
-| Existing order lookup | Returns details for a valid order ID | PASS |
-| Non-existent order handling | Reports that no matching order exists | PASS |
-| Case-insensitive order IDs | Finds an order regardless of ID letter case | PASS |
-| Electronics return policy retrieval | Retrieves the 10-day return policy | PASS |
-| Shipping policy retrieval | Retrieves relevant shipping duration information | PASS |
-
-**Test Summary:** 5 tests passed, 0 failed.
-
-Tests executed using `python -m pytest -v`.
-
-## 10. Limitations
-
-- The system depends on Gemini API availability and quota limits.
-- Order information is limited to the records available in `orders.csv`.
-- Policy answers depend on the contents of the available policy documents and retrieval quality.
-- The current interface runs in a terminal and is not a deployed web application.
-
-## 11. Future Enhancements
-
-- Develop a web-based chat interface.
-- Connect to a live order management database.
-- Add customer authentication and access controls.
-- Improve retrieval accuracy and expand automated tests.
-- Deploy the application to a cloud platform.
-
-## 12. Conclusion
-
-KartEase demonstrates how an AI-powered customer support assistant can combine Retrieval-Augmented Generation, vector search, and tool calling to answer policy questions and retrieve order information. The project provides a foundation for building more capable customer support systems.
+- What payment methods does KartEase accept?
+-
