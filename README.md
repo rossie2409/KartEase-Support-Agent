@@ -153,7 +153,19 @@ The current test suite contains five tests:
 4. Electronics return policy retrieval.
 5. Shipping policy retrieval.
 
-All five tests passed during development.
+### Test Results
+
+| Test Case | Expected Result | Status |
+|---|---|---|
+| Existing order lookup | Returns details for a valid order ID | PASS |
+| Non-existent order handling | Reports that no matching order exists | PASS |
+| Case-insensitive order IDs | Finds an order regardless of ID letter case | PASS |
+| Electronics return policy retrieval | Retrieves the 10-day return policy | PASS |
+| Shipping policy retrieval | Retrieves relevant shipping duration information | PASS |
+
+**Test Summary:** 5 tests passed, 0 failed.
+
+Tests executed using `python -m pytest -v`.
 
 ## 10. Limitations
 
