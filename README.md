@@ -1,0 +1,175 @@
+
+
+# KartEase – AI-Powered Customer Support Agent
+
+## 1. Project Overview
+
+KartEase is an AI-powered customer support assistant that helps customers get answers to product policies and order-related questions.
+
+The system uses Retrieval-Augmented Generation (RAG) to retrieve relevant information from company policy documents and uses an order lookup tool to retrieve order details from a CSV file.
+
+## 2. Objectives
+
+- Answer customer questions about returns, refunds, shipping, payments, and warranties.
+- Retrieve relevant information from policy documents.
+- Look up order details using an order ID.
+- Handle invalid order IDs without inventing order information.
+- Provide clear, concise responses through a conversational interface.
+
+## 3. Technologies Used
+
+- Python
+- Google Gemini API
+- LangChain
+- ChromaDB
+- Google Generative AI Embeddings
+- CSV for order data
+- Pytest for automated testing
+- python-dotenv for environment configuration
+
+## 4. System Features
+
+### Policy Search using RAG
+
+The policy documents are loaded, split into smaller text chunks, and converted into vector embeddings. ChromaDB stores these vectors.
+
+When a customer asks a policy question, the system retrieves relevant text chunks using similarity search. Gemini uses the retrieved information to formulate an answer.
+
+### Order Lookup
+
+The order lookup tool searches `orders.csv` using the provided order ID.
+
+It returns the matching order details or reports when no matching order is found.
+
+### Conversational Support
+
+The Gemini model decides when to use the policy search or order lookup tool and presents the result in a readable format.
+
+## 5. Project Structure
+
+```text
+kartease_starter/
+├── data/
+│   ├── payments_and_offers.md
+│   ├── returns_and_refunds.md
+│   ├── shipping_and_delivery.md
+│   └── warranty_and_repairs.md
+├── chroma_db/
+├── .env
+├── .gitignore
+├── ingest_policies.py
+├── search_policies.py
+├── order_tools.py
+├── support_agent.py
+├── orders.csv
+├── test_order_tools.py
+├── test_search_policies.py
+├── requirements-langchain.txt
+├── pytest.ini
+└── README.md
+```
+
+## 6. Prerequisites
+
+- Python 3.11 or a compatible Python version
+- A Google Gemini API key
+- Internet connectivity for Gemini API calls
+- Required Python packages
+
+## 7. Installation and Setup
+
+### Step 1: Create and activate a virtual environment
+
+On Windows CMD:
+
+```bash
+python -m venv .venv
+.venv\Scripts\activate
+```
+
+### Step 2: Install dependencies
+
+```bash
+pip install -r requirements-langchain.txt
+```
+
+### Step 3: Configure environment variables
+
+Create a `.env` file in the project root:
+
+```text
+GOOGLE_API_KEY=your_google_api_key
+GEMINI_MODEL=gemini-3.5-flash-lite
+GEMINI_EMBED_MODEL=gemini-embedding-001
+```
+
+Replace `your_google_api_key` with your own API key. Never commit your real API key to GitHub.
+
+### Step 4: Build the policy knowledge base
+
+```bash
+python ingest_policies.py
+```
+
+This loads the policy Markdown files, creates text chunks, generates embeddings, and stores them in ChromaDB.
+
+### Step 5: Start the support agent
+
+```bash
+python support_agent.py
+```
+
+Ask a question about policies or provide an order ID.
+
+Type `exit` to close the application.
+
+## 8. Example Questions
+
+Policy questions:
+
+- What is the return window for electronics?
+- How long does standard shipping take?
+- What are the warranty conditions?
+
+Order questions:
+
+- Can you check order KE1001?
+- Where is my order?
+- Can you check order KE9999?
+
+## 9. Automated Testing
+
+Run all automated tests:
+
+```bash
+python -m pytest -v
+```
+
+The current test suite contains five tests:
+
+1. Existing order lookup.
+2. Non-existent order handling.
+3. Case-insensitive order IDs.
+4. Electronics return policy retrieval.
+5. Shipping policy retrieval.
+
+All five tests passed during development.
+
+## 10. Limitations
+
+- The system depends on Gemini API availability and quota limits.
+- Order information is limited to the records available in `orders.csv`.
+- Policy answers depend on the contents of the available policy documents and retrieval quality.
+- The current interface runs in a terminal and is not a deployed web application.
+
+## 11. Future Enhancements
+
+- Develop a web-based chat interface.
+- Connect to a live order management database.
+- Add customer authentication and access controls.
+- Improve retrieval accuracy and expand automated tests.
+- Deploy the application to a cloud platform.
+
+## 12. Conclusion
+
+KartEase demonstrates how an AI-powered customer support assistant can combine Retrieval-Augmented Generation, vector search, and tool calling to answer policy questions and retrieve order information. The project provides a foundation for building more capable customer support systems.
